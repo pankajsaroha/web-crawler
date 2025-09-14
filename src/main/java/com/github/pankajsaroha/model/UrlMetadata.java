@@ -17,4 +17,10 @@ public class UrlMetadata {
     private long fetchDuration;
     private int retry;
     private Status status;
+
+    @Override
+    public String toString() {
+        return String.format("%s |  %s | %s | %d | %d | %d | %s", url, title, filePath, statusCode, fetchDuration,
+                retry, status);
+    }
 }

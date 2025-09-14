@@ -1,5 +1,6 @@
 package com.github.pankajsaroha.crawler;
 
+import com.github.pankajsaroha.context.CrawlerContext;
 import com.github.pankajsaroha.fontier.InMemoryFrontierQueue;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,18 +15,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Crawler {
-    private InMemoryFrontierQueue frontierQueue;
     private HttpClient client;
+    private CrawlerContext context;
     private ExecutorService executorService;
 
-    public Crawler(InMemoryFrontierQueue frontierQueue) {
-        this.frontierQueue = frontierQueue;
+    public Crawler(CrawlerContext context) {
+        this.context = context;
         this.client = HttpClient.newHttpClient();
         this.executorService = Executors.newFixedThreadPool(10);
     }
 
     public void startCrawling() throws InterruptedException {
-        String url = frontierQueue.take();
-        //executorService.submit(new Worker(url));
+        String url = context.getQueue().take();
+        executorService.submit(new Worker(url, context));
     }
 }
