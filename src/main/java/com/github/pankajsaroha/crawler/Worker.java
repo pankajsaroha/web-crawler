@@ -30,7 +30,7 @@ public class Worker implements Runnable {
                 //TODO: Add duplicate check
                 context.getQueue().enqueue(link);
             }
-            String filePath = context.getContentStorage().upload(page.getContent());
+            String filePath = context.getContentStorage().upload(page.getTitle(), page.getContent());
             UrlMetadata metadata = UrlMetadata.builder()
                     .url(url)
                     .title(page.getTitle())
