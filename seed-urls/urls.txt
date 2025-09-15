@@ -1,0 +1,10 @@
+https://example.com
+https://www.iana.org/domains/reserved
+https://www.wikipedia.org
+https://httpbin.org/html
+https://jsonplaceholder.typicode.com/posts/1
+https://api.github.com
+https://www.bbc.co.uk/news
+https://www.nytimes.com/section/world
+https://developer.mozilla.org/en-US/
+https://docs.python.org/3/

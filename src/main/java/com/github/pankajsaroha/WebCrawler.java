@@ -10,11 +10,14 @@ import com.github.pankajsaroha.storage.UrlMetadataStorage;
 
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class WebCrawler {
     public static void main(String[] args) throws IOException, InterruptedException {
         InMemoryFrontierQueue queue = new InMemoryFrontierQueue();
-        queue.enqueue("https://example.com/");
+        //queue.enqueue("https://example.com/");
+        Path basedir = Path.of("seed-urls");
+        queue.fetchFromFile(basedir.resolve("urls.txt").toString());
 
         Crawler crawler = new Crawler(new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage()), 10, Crawler.Mode.VIRTUAL_PER_TASK);
         crawler.startCrawling();

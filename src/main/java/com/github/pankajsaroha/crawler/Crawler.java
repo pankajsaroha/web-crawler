@@ -85,9 +85,8 @@ public class Crawler {
         running = false;
         executorService.shutdown(); //graceful stop
 
-        //TODO: TimeUnit not working, maybe indexing issue
         //some threads might already be in while loop, but queue is blocked as no url is available
-        //they won't shutdown. We need to wait before shutting them down forcefully
+        //they won't shut down. We need to wait before shutting them down forcefully
         if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
             executorService.shutdownNow(); // force stop if not finished
         }
