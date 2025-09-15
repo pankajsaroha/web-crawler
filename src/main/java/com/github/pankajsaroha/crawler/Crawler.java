@@ -4,6 +4,7 @@ import com.github.pankajsaroha.context.CrawlerContext;
 import java.net.http.HttpClient;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Crawler {
     public enum Mode {
@@ -80,16 +81,16 @@ public class Crawler {
         }
     }
 
-    public void shutdown() {
+    public void shutdown() throws InterruptedException {
         running = false;
         executorService.shutdown(); //graceful stop
 
         //TODO: TimeUnit not working, maybe indexing issue
         //some threads might already be in while loop, but queue is blocked as no url is available
         //they won't shutdown. We need to wait before shutting them down forcefully
-        /*if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+        if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
             executorService.shutdownNow(); // force stop if not finished
-        }*/
+        }
 
     }
 }
