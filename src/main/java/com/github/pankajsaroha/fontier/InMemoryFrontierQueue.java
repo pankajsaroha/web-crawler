@@ -28,6 +28,11 @@ public class InMemoryFrontierQueue implements FrontierQueue {
         }
     }
 
+    @Override
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
     public String take() throws InterruptedException {
         return queue.take();
     }
