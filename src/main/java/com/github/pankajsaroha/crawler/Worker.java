@@ -45,6 +45,7 @@ public class Worker implements Runnable {
                     .build();
 
             context.getMetadataStorage().insert(metadata);
+            context.incrementProcessedUrls();
         } catch (RuntimeException | IOException | InterruptedException e) {
             log.error(e.getMessage());
         }

@@ -8,7 +8,8 @@ import com.github.pankajsaroha.storage.MetadataStorage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
+import java.util.concurrent.atomic.AtomicInteger;
+
 @Getter
 public class CrawlerContext {
     private FrontierQueue queue;
@@ -17,4 +18,23 @@ public class CrawlerContext {
     private ContentStorage contentStorage;
     private MetadataStorage metadataStorage;
     private int depth;
+    private AtomicInteger processedUrls;
+
+    public CrawlerContext(FrontierQueue queue, Fetcher fetcher, Parser parser, ContentStorage contentStorage, MetadataStorage metadataStorage, int depth) {
+        this.queue = queue;
+        this.fetcher = fetcher;
+        this.parser = parser;
+        this.contentStorage = contentStorage;
+        this.metadataStorage = metadataStorage;
+        this.depth = depth;
+        this.processedUrls = new AtomicInteger();
+    }
+
+    public void incrementProcessedUrls() {
+        processedUrls.incrementAndGet();
+    }
+
+    public int getProcessedUrls() {
+        return processedUrls.get();
+    }
 }

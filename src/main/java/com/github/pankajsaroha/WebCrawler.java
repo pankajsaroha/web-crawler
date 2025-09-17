@@ -8,12 +8,17 @@ import com.github.pankajsaroha.fontier.FrontierQueue;
 import com.github.pankajsaroha.fontier.InMemoryFrontierQueue;
 import com.github.pankajsaroha.storage.FileContentStorage;
 import com.github.pankajsaroha.storage.UrlMetadataStorage;
+import com.sun.management.OperatingSystemMXBean;
 
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +52,8 @@ public class WebCrawler {
     }
 
     private static BenchmarkResult runBenchmark(Crawler.Mode mode, FrontierQueue queue, int numThreads, int depth) throws InterruptedException {
-        Crawler crawler = new Crawler(new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage(), depth), numThreads, mode);
+        CrawlerContext context = new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage(), depth);
+        Crawler crawler = new Crawler(context, numThreads, mode);
 
         Instant startTime = Instant.now();
         crawler.startCrawling();
@@ -57,7 +63,24 @@ public class WebCrawler {
             Thread.sleep(100);
         }
         crawler.shutdown();
-        return null;
+
+        Instant endTime = Instant.now();
+        Duration duration = Duration.between(startTime, endTime);
+        long totalTimeMillis = duration.toMillis();
+        double totalTimeSeconds = totalTimeMillis / 1000.0;
+        int totalProcessed = context.getProcessedUrls();
+
+        //import OperatingSystemMXBean from com.sun.management, not java.lang.management
+        OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+
+        long memoryUsed = memoryBean.getHeapMemoryUsage().getUsed();
+        int peakThreads = threadBean.getPeakThreadCount();
+        double cpuLoad = osBean.getCpuLoad();
+
+        //TODO: add error count logic in startCrawling
+        return new BenchmarkResult(mode.name(), totalProcessed, 0, totalTimeMillis, totalProcessed / totalTimeSeconds, memoryUsed, peakThreads, cpuLoad);
     }
 
     private static class BenchmarkResult {

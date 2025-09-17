@@ -44,6 +44,7 @@ public class Crawler {
      * But in PLATFORM_PER_TASK and VIRTUAL_PER_TASK modes, we’re already creating a new task per URL in startCrawling() so that executor service could map it to appropriate thread
      * @throws InterruptedException
      */
+    //TODO: add error count logic in startCrawling, wrap this around try-catch and count errors like context.incrementErrorCount();
     public void startCrawling() throws InterruptedException {
         switch (mode) {
             case FIXED_PLATFORM_POOL -> {
