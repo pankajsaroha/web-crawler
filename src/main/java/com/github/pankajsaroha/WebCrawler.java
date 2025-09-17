@@ -27,9 +27,13 @@ public class WebCrawler {
 
         List<BenchmarkResult> results = new ArrayList<>();
 
+        //TODO: Move to config file
+        int numThreads = 10; // number of fixed threads
+        int depth = 2; // number of child urls to explore
+
         for (Crawler.Mode mode : Crawler.Mode.values()) {
             System.out.println("Running Benchmark for mode: " + mode);
-            BenchmarkResult result = runBenchmark(mode, queue);
+            BenchmarkResult result = runBenchmark(mode, queue, numThreads, depth);
             results.add(result);
         }
 
@@ -42,8 +46,8 @@ public class WebCrawler {
         crawler.shutdown();*/
     }
 
-    private static BenchmarkResult runBenchmark(Crawler.Mode mode, FrontierQueue queue) throws InterruptedException {
-        Crawler crawler = new Crawler(new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage()), 10, mode);
+    private static BenchmarkResult runBenchmark(Crawler.Mode mode, FrontierQueue queue, int numThreads, int depth) throws InterruptedException {
+        Crawler crawler = new Crawler(new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage(), depth), numThreads, mode);
 
         Instant startTime = Instant.now();
         crawler.startCrawling();

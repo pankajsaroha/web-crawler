@@ -16,4 +16,5 @@ public class CrawlerContext {
     private Parser parser;
     private ContentStorage contentStorage;
     private MetadataStorage metadataStorage;
+    private int depth;
 }
