@@ -4,11 +4,13 @@ import com.github.pankajsaroha.context.CrawlerContext;
 import com.github.pankajsaroha.crawler.Crawler;
 import com.github.pankajsaroha.crawler.Fetcher;
 import com.github.pankajsaroha.crawler.Parser;
+import com.github.pankajsaroha.filter.BloomFilter;
 import com.github.pankajsaroha.fontier.FrontierQueue;
 import com.github.pankajsaroha.fontier.InMemoryFrontierQueue;
 import com.github.pankajsaroha.storage.FileContentStorage;
 import com.github.pankajsaroha.storage.UrlMetadataStorage;
 import com.sun.management.OperatingSystemMXBean;
+import lombok.extern.slf4j.Slf4j;
 
 
 import java.io.IOException;
@@ -18,17 +20,19 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class WebCrawler {
     public static void main(String[] args) throws IOException, InterruptedException {
         FrontierQueue queue = new InMemoryFrontierQueue();
-        //queue.enqueue("https://example.com/");
+
         Path basedir = Path.of("seed-urls");
-        queue.fetchFromFile(basedir.resolve("urls.txt").toString());
+        int numberOfUrls = queue.fetchFromFile(basedir.resolve("urls.txt").toString());
 
         List<BenchmarkResult> results = new ArrayList<>();
 
@@ -37,22 +41,21 @@ public class WebCrawler {
         int depth = 2; // number of child urls to explore
 
         for (Crawler.Mode mode : Crawler.Mode.values()) {
-            System.out.println("Running Benchmark for mode: " + mode);
-            BenchmarkResult result = runBenchmark(mode, queue, numThreads, depth);
+            System.out.println("================== Running Benchmark for mode: " + mode + " ========================");
+            BenchmarkResult result = runBenchmark(mode, queue, numThreads, numberOfUrls, depth);
             results.add(result);
         }
 
         Path benchmarkResults = Path.of("benchmark-results");
         Files.createDirectories(benchmarkResults);
-        writeToCsv(results, basedir.resolve("benchmark-results.csv"));
-        System.out.println("Benchmark complete. Results written to: " + benchmarkResults.toAbsolutePath());
-        /*Crawler crawler = new Crawler(new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage()), 10, Crawler.Mode.VIRTUAL_PER_TASK);
-        crawler.startCrawling();
-        crawler.shutdown();*/
+        Files.writeString(benchmarkResults.resolve("benchmark-results.csv"), "",
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        writeToCsv(results, benchmarkResults.resolve("benchmark-results.csv"));
+        log.info("Benchmark complete. Results written to: {}", benchmarkResults.toAbsolutePath());
     }
 
-    private static BenchmarkResult runBenchmark(Crawler.Mode mode, FrontierQueue queue, int numThreads, int depth) throws InterruptedException {
-        CrawlerContext context = new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage(), depth);
+    private static BenchmarkResult runBenchmark(Crawler.Mode mode, FrontierQueue queue, int numThreads, int urls, int depth) throws InterruptedException {
+        CrawlerContext context = new CrawlerContext(queue, new Fetcher(), new Parser(), new FileContentStorage(), new UrlMetadataStorage(), new BloomFilter(urls, 0.01), depth);
         Crawler crawler = new Crawler(context, numThreads, mode);
 
         Instant startTime = Instant.now();
@@ -121,9 +124,11 @@ public class WebCrawler {
 
     private static void writeToCsv(List<BenchmarkResult> results, Path path) throws IOException {
         try(PrintWriter writer = new PrintWriter(Files.newBufferedWriter(path))) {
-            writer.println("Mode    |   URL Processed   |   TotalTimeMillis     |   Throughput(URLs/sec)");
+            writer.println("Mode                |   URL Processed   |   ERROR_COUNT     |   TotalTimeMillis     |   Throughput(URLs/sec)    |   memoryUsedBytes     |       peakThreadCount     |   cpuLoad");
             for (BenchmarkResult result : results) {
-                writer.printf("%s   |   %d  |   %d  |   %.2f\n", result.mode, result.totalProcessed, result.totalTimeMillis, result.throughput);
+                writer.printf("%s   |   %d  |   %d  |   %d  |   %.2f    |   %d      |       %d      |   %.2f\n",
+                        result.mode, result.totalProcessed, result.errorCount, result.totalTimeMillis, result.throughput,
+                        result.memoryUsedBytes, result.peakThreadCount, result.cpuLoad);
             }
         }
     }

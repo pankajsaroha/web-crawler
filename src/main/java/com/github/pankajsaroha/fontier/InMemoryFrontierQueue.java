@@ -17,15 +17,18 @@ public class InMemoryFrontierQueue implements FrontierQueue {
         queue.offer(url);
     }
 
-    public void fetchFromFile(String fileLocation) {
+    public int fetchFromFile(String fileLocation) {
+        int urls = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String url;
             while ((url = reader.readLine()) != null) {
                 queue.offer(url);
+                urls++;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return urls;
     }
 
     @Override

@@ -29,9 +29,12 @@ public class Worker implements Runnable {
             int scrolledUrls = 0; // number of child urls to explore
 
             for (var link : page.getLinks()) {
-                //TODO: Add duplicate check
-                if (scrolledUrls++ < context.getDepth())
-                    context.getQueue().enqueue(link);
+                if (!context.getFilter().search(link)) {
+                    if (scrolledUrls++ < context.getDepth()) {
+                        context.getQueue().enqueue(link);
+                        context.getFilter().add(link);
+                    }
+                }
             }
             String filePath = context.getContentStorage().upload(page.getTitle(), page.getContent());
             UrlMetadata metadata = UrlMetadata.builder()

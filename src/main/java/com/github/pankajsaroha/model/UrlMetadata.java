@@ -20,7 +20,7 @@ public class UrlMetadata {
 
     @Override
     public String toString() {
-        return String.format("%s |  %s | %s | %d | %d | %d | %s", url, title, filePath, statusCode, fetchDuration,
+        return String.format("%s |  %s | %s | %d | %d | %d | %s\n", url, title, filePath, statusCode, fetchDuration,
                 retry, status);
     }
 }
