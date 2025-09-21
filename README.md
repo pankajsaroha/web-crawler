@@ -1,4 +1,5 @@
 # web-crawler
+This web crawler has been designed with virtual, platform thread per task and fixed threads pool to see their performance.
 
 **Crawler** - Orchestrator. Submits tasks to the pool.
 
